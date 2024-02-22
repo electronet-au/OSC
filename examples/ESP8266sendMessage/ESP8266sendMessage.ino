@@ -16,12 +16,21 @@
 #include <WiFiUdp.h>
 #include <OSCMessage.h>
 
-char ssid[] = "*****************";          // your network SSID (name)
-char pass[] = "*******";                    // your network password
+// Button Input + LED Output
+const int btnPin = 14;                 // D5 pin
+
+int buttonState = 0; 
+
+boolean btnChanged = false;
+int btnVal = 1;
+
+
+char ssid[] = "CompanionTallyPi";          // your network SSID (name)
+char pass[] = "TPwifi1968aft01";                    // your network password
 
 WiFiUDP Udp;                                // A UDP instance to let us send and receive packets over UDP
-const IPAddress outIp(10,40,10,105);        // remote IP of your computer
-const unsigned int outPort = 9999;          // remote port to receive OSC
+const IPAddress outIp(172,168,1,1);        // remote IP of your computer
+const unsigned int outPort = 12321;          // remote port to receive OSC
 const unsigned int localPort = 8888;        // local port to listen for OSC packets (actually not used for sending)
 
 void setup() {
@@ -53,14 +62,29 @@ void setup() {
     Serial.println(Udp.localPort());
 #endif
 
+ // btnInput
+    pinMode(btnPin, INPUT_PULLUP);
+
 }
 
 void loop() {
-    OSCMessage msg("/test");
-    msg.add("hello, osc.");
-    Udp.beginPacket(outIp, outPort);
+    OSCMessage msg("/location/99/3/1");
+    // msg.add("hello, osc.");
+
+  // read the state of the pushbutton value:
+    buttonState = digitalRead(btnPin);
+
+  // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
+  if (buttonState == HIGH) {
+    // turn LED on:
+    Serial.println("Failed");   
+  } else {
+    // turn LED off:
+ Udp.beginPacket(outIp, outPort);
     msg.send(Udp);
     Udp.endPacket();
     msg.empty();
     delay(500);
+    Serial.println("Sent");
+  }
 }
